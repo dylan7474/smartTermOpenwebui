@@ -1,4 +1,4 @@
-# smartTerm
+# smartTermOllama
 
 smartTerm is a lightweight terminal client that augments the traditional Linux command line with AI-assisted features. It communicates with web APIs to provide contextual suggestions, summaries, and automation directly in the shell, helping users work faster without leaving their terminal workflows.
 

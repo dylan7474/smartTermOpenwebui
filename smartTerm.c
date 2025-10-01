@@ -113,25 +113,42 @@ char* execute_and_capture(const char* command) {
     FILE *fp;
     char buffer[1024];
     char *output = malloc(1);
+    size_t used = 0;
     if (!output) {
         fprintf(stderr, "Error: unable to allocate memory for command output.\n");
         return strdup("Command output unavailable: memory allocation failed.");
     }
     output[0] = '\0';
-    size_t output_size = 1;
     char full_command[2048];
     snprintf(full_command, sizeof(full_command), "%s 2>&1", command);
     fp = popen(full_command, "r");
-    if (fp == NULL) { fprintf(stderr, "Failed to run command\n"); return output; }
+    if (fp == NULL) {
+        fprintf(stderr, "Failed to run command\n");
+        return output;
+    }
     printf("--- Output ---\n");
     while (fgets(buffer, sizeof(buffer), fp) != NULL) {
         printf("%s", buffer);
         size_t buffer_len = strlen(buffer);
-        char *ptr = realloc(output, output_size + buffer_len);
-        if(!ptr) { fprintf(stderr, "Failed to realloc memory\n"); break; }
+        char *ptr = realloc(output, used + buffer_len + 1);
+        if(!ptr) {
+            fprintf(stderr, "Failed to realloc memory\n");
+            free(output);
+            output = strdup("Command output truncated: memory allocation failed.");
+            if (!output) {
+                output = strdup("Command output unavailable due to memory allocation failure.");
+            }
+            if (!output) {
+                output = malloc(1);
+                if (output) output[0] = '\0';
+            }
+            used = output ? strlen(output) : 0;
+            break;
+        }
         output = ptr;
-        strcat(output, buffer);
-        output_size += buffer_len;
+        memcpy(output + used, buffer, buffer_len);
+        used += buffer_len;
+        output[used] = '\0';
     }
     printf("--------------\n");
     pclose(fp);
@@ -214,6 +231,7 @@ void get_ai_action(const char* user_prompt, AIAction *ai_action) {
         fprintf(stderr, "Error: unable to allocate memory for response buffer.\n");
         return;
     }
+    chunk.memory[0] = '\0';
     curl_global_init(CURL_GLOBAL_ALL);
     curl = curl_easy_init();
     if (curl) {

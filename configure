@@ -1,0 +1,53 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+missing=()
+
+declare -A hints=(
+  [make]="Install GNU make (e.g., sudo apt install build-essential)."
+  [gcc]="Install GCC and build essentials (e.g., sudo apt install build-essential)."
+  [pkg-config]="Install pkg-config (e.g., sudo apt install pkg-config)."
+  [curl]="Install curl CLI (e.g., sudo apt install curl)."
+  [libcurl-devel]="Install libcurl development files (e.g., sudo apt install libcurl4-openssl-dev)."
+  [json-c-devel]="Install json-c development files (e.g., sudo apt install libjson-c-dev)."
+)
+
+check_tool() {
+  local tool="$1"
+  if ! command -v "$tool" >/dev/null 2>&1; then
+    missing+=("$tool")
+  fi
+}
+
+check_pkgconfig_lib() {
+  local lib="$1"
+  if ! pkg-config --exists "$lib" >/dev/null 2>&1; then
+    missing+=("$lib")
+  fi
+}
+
+check_tool make
+check_tool gcc
+check_tool pkg-config
+check_tool curl
+
+if [[ ! " ${missing[*]} " =~ pkg-config ]]; then
+  check_pkgconfig_lib libcurl
+  check_pkgconfig_lib json-c
+else
+  missing+=(libcurl-devel json-c-devel)
+fi
+
+if ((${#missing[@]} > 0)); then
+  echo "The following build tools or libraries are missing:"
+  for item in "${missing[@]}"; do
+    echo "  - $item"
+    if [[ -n "${hints[$item]:-}" ]]; then
+      echo "    Hint: ${hints[$item]}"
+    fi
+  done
+  echo "\nPlease install the missing dependencies and re-run ./configure." >&2
+  exit 1
+fi
+
+echo "All required build tools and libraries are available."

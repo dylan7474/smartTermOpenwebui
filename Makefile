@@ -4,10 +4,10 @@ CFLAGS = -Wall -g -std=c99
 LDFLAGS = -lcurl -ljson-c
 
 # Target executable name
-TARGET = smart_terminal
+TARGET = smartTerm
 
 # Source file
-SRC = smart_terminal.c
+SRC = smartTerm.c
 
 # Phony targets
 .PHONY: all clean install

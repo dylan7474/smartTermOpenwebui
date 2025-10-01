@@ -11,7 +11,7 @@ The project ships with a standard `Makefile`. To build the executable, ensure th
 make
 ```
 
-This will compile the `smart_terminal` binary. To remove build artifacts, run `make clean`. You can install the binary system-wide with `sudo make install`.
+This will compile the `smartTerm` binary. To remove build artifacts, run `make clean`. You can install the binary system-wide with `sudo make install`.
 
 ## Basic Controls
 

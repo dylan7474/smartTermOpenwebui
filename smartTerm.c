@@ -113,6 +113,10 @@ char* execute_and_capture(const char* command) {
     FILE *fp;
     char buffer[1024];
     char *output = malloc(1);
+    if (!output) {
+        fprintf(stderr, "Error: unable to allocate memory for command output.\n");
+        return strdup("Command output unavailable: memory allocation failed.");
+    }
     output[0] = '\0';
     size_t output_size = 1;
     char full_command[2048];
@@ -203,8 +207,13 @@ void parse_webui_action(const char *json_string, AIAction *ai_action) {
 }
 
 void get_ai_action(const char* user_prompt, AIAction *ai_action) {
+    memset(ai_action, 0, sizeof(*ai_action));
     CURL *curl;
     struct MemoryStruct chunk = { .memory = malloc(1), .size = 0 };
+    if (!chunk.memory) {
+        fprintf(stderr, "Error: unable to allocate memory for response buffer.\n");
+        return;
+    }
     curl_global_init(CURL_GLOBAL_ALL);
     curl = curl_easy_init();
     if (curl) {
@@ -263,7 +272,7 @@ void free_ai_action(AIAction *action) {
     if (action->action) free(action->action);
     if (action->command) free(action->command);
     if (action->filename) free(action->filename);
-    if (action->content) free(action.content);
+    if (action->content) free(action->content);
     if (action->answer) free(action->answer);
     if (action->question) free(action->question);
 }
